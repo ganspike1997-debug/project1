@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cottagers and Indians — Venn Diagram</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --arthur-dark: #1a3a5c;
+    --arthur-mid: #2563a8;
+    --arthur-light: #dbeeff;
+    --arthur-accent: #4a9ede;
+    --maureen-dark: #6b1040;
+    --maureen-mid: #c0395e;
+    --maureen-light: #ffe0ea;
+    --maureen-accent: #e8638a;
+    --shared-dark: #3b1a6b;
+    --shared-mid: #7c3aed;
+    --shared-light: #ede9ff;
+    --shared-accent: #a78bfa;
+    --ink: #1a1a2e;
+    --parchment: #faf8f3;
+    --warm-gray: #8a8070;
+    --border: #d4c9b0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 15px;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: var(--parchment);
+    text-align: center;
+    padding: 3rem 2rem 2.5rem;
+    border-bottom: 4px solid var(--arthur-accent);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 60px,
+      rgba(255,255,255,0.02) 60px,
+      rgba(255,255,255,0.02) 61px
+    );
+    pointer-events: none;
+  }
+  .header-kicker {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--arthur-accent);
+    margin-bottom: 0.75rem;
+  }
+  header h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.8rem, 4vw, 3.2rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+  }
+  header h1 em {
+    font-style: italic;
+    color: var(--maureen-accent);
+  }
+  .header-sub {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: rgba(250,248,243,0.7);
+    margin-bottom: 1.5rem;
+  }
+  .header-meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: rgba(250,248,243,0.45);
+    text-transform: uppercase;
+  }
+
+  /* ── QUESTIONS BANNER ── */
+  .questions-bar {
+    background: var(--shared-dark);
+    color: var(--shared-light);
+    padding: 1.25rem 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2.5rem;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    border-bottom: 3px solid var(--shared-accent);
+  }
+  .questions-bar span {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .questions-bar .q-num {
+    color: var(--shared-accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .venn-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ── VISUAL VENN (decorative circles) ── */
+  .venn-visual {
+    position: relative;
+    height: 130px;
+    margin: 2rem auto 0;
+    width: 700px;
+    max-width: 100%;
+  }
+  /* Circles use SVG-like absolute layout: container 700px wide
+     Left circle center: 240px, Right circle center: 460px, each 320px wide, 120px tall
+     Overlap zone: x 300–380 = 80px wide (comfortably wider than "Both" text)
+  */
+  .v-circle {
+    position: absolute;
+    width: 320px;
+    height: 120px;
+    border-radius: 50%;
+    top: 5px;
+  }
+  .v-circle.arthur {
+    left: 80px;                          /* center at 80+160 = 240px */
+    background: var(--arthur-mid);
+    opacity: 0.15;
+    border: 2.5px solid var(--arthur-mid);
+  }
+  .v-circle.maureen {
+    left: 300px;                         /* center at 300+160 = 460px */
+    background: var(--maureen-mid);
+    opacity: 0.15;
+    border: 2.5px solid var(--maureen-mid);
+  }
+  /* Labels absolutely placed at geometric centers */
+  .v-label {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+  }
+  /* Arthur label: center of left-only area = midpoint of 80 to 300 = 190px */
+  .v-label.arthur {
+    color: var(--arthur-mid);
+    font-size: 1.35rem;
+    left: 190px;
+    transform: translate(-50%, -50%);
+  }
+  /* Both label: center of overlap = midpoint of 300 to 400 = 350px */
+  .v-label.shared {
+    color: var(--shared-dark);
+    font-size: 0.9rem;
+    font-style: italic;
+    left: 350px;
+    transform: translate(-50%, -50%);
+  }
+  /* Maureen label: center of right-only area = midpoint of 400 to 620 = 510px */
+  .v-label.maureen {
+    color: var(--maureen-mid);
+    font-size: 1.35rem;
+    left: 510px;
+    transform: translate(-50%, -50%);
+  }
+
+  /* ── THREE COLUMNS ── */
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 0.7fr 1fr;
+    gap: 0;
+    margin-top: 2.5rem;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+  }
+
+  .col {
+    padding: 2rem 1.5rem 2.5rem;
+    position: relative;
+  }
+  .col-arthur {
+    background: linear-gradient(160deg, #f0f7ff 0%, #e4f0ff 100%);
+    border-right: 1.5px solid #b8d4f0;
+  }
+  .col-shared {
+    background: linear-gradient(180deg, #f3f0ff 0%, #ebe5ff 100%);
+    border-right: 1.5px solid #c4b5f5;
+    position: relative;
+  }
+  .col-shared::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -1.5px; right: -1.5px;
+    height: 5px;
+    background: linear-gradient(90deg, var(--arthur-accent), var(--shared-accent), var(--maureen-accent));
+  }
+  .col-maureen {
+    background: linear-gradient(160deg, #fff0f5 0%, #ffe0ea 100%);
+  }
+
+  .col-header {
+    text-align: center;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 2px solid;
+  }
+  .col-arthur .col-header { border-color: var(--arthur-accent); }
+  .col-shared .col-header { border-color: var(--shared-accent); }
+  .col-maureen .col-header { border-color: var(--maureen-accent); }
+
+  .col-header .col-name {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 1.7rem;
+    letter-spacing: -0.02em;
+    display: block;
+  }
+  .col-arthur .col-name { color: var(--arthur-dark); }
+  .col-shared .col-name { color: var(--shared-dark); font-size: 1.3rem; }
+  .col-maureen .col-name { color: var(--maureen-dark); }
+
+  .col-header .col-subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+    display: block;
+  }
+  .col-arthur .col-subtitle { color: var(--arthur-mid); }
+  .col-shared .col-subtitle { color: var(--shared-mid); }
+  .col-maureen .col-subtitle { color: var(--maureen-mid); }
+
+  /* ── POINTS ── */
+  .point {
+    margin-bottom: 1.6rem;
+    padding-left: 1rem;
+    border-left: 3px solid;
+    position: relative;
+  }
+  .col-arthur .point { border-color: var(--arthur-accent); }
+  .col-shared .point { border-color: var(--shared-accent); }
+  .col-maureen .point { border-color: var(--maureen-accent); }
+
+  .point-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    display: block;
+  }
+  .col-arthur .point-tag { color: var(--arthur-mid); }
+  .col-shared .point-tag { color: var(--shared-mid); }
+  .col-maureen .point-tag { color: var(--maureen-mid); }
+
+  .point-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    margin-bottom: 0.4rem;
+    display: block;
+  }
+  .col-arthur .point-title { color: var(--arthur-dark); }
+  .col-shared .point-title { color: var(--shared-dark); }
+  .col-maureen .point-title { color: var(--maureen-dark); }
+
+  .point p {
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: #2a2a3e;
+    font-family: 'EB Garamond', serif;
+  }
+  .cite {
+    font-style: italic;
+    color: var(--warm-gray);
+    font-size: 0.83rem;
+  }
+
+  /* ── DIVIDER ── */
+  .col-divider {
+    width: 90%;
+    margin: 1.5rem auto;
+    border: none;
+    border-top: 1px dashed;
+    opacity: 0.35;
+  }
+  .col-arthur .col-divider { border-color: var(--arthur-mid); }
+  .col-shared .col-divider { border-color: var(--shared-mid); }
+  .col-maureen .col-divider { border-color: var(--maureen-mid); }
+
+  /* ── CATEGORY LABELS ── */
+  .category-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+  .col-arthur .category-label { background: var(--arthur-dark); color: var(--arthur-light); }
+  .col-shared .category-label { background: var(--shared-dark); color: var(--shared-light); }
+  .col-maureen .category-label { background: var(--maureen-dark); color: var(--maureen-light); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    color: rgba(250,248,243,0.6);
+    text-align: center;
+    padding: 2rem;
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+  footer strong {
+    font-style: normal;
+    color: var(--parchment);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── WORKS CITED ── */
+  .works-cited {
+    max-width: 900px;
+    margin: 3rem auto 1rem;
+    padding: 1.5rem 2rem;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+  }
+  .works-cited h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--ink);
+    color: var(--ink);
+  }
+  .works-cited p {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.92rem;
+    line-height: 1.7;
+    padding-left: 2em;
+    text-indent: -2em;
+    color: var(--ink);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .columns {
+      grid-template-columns: 1fr;
+    }
+    .col-arthur { border-right: none; border-bottom: 1.5px solid #b8d4f0; }
+    .col-shared { border-right: none; border-bottom: 1.5px solid #c4b5f5; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="header-kicker">Literary Analysis · Venn Diagram</p>
+  <h1><em>Cottagers and Indians</em></h1>
+  <p class="header-sub">Drew Hayden Taylor · A Comparative Analysis of Worldviews, Ownership, and Values</p>
+  <p class="header-meta">Arthur (Anishinaabe) &nbsp;|&nbsp; Maureen (Settler Cottager) &nbsp;|&nbsp; Shared Ground</p>
+</header>
+
+<div class="questions-bar">
+  <span><span class="q-num">Q1</span> How do their worldviews differ?</span>
+  <span><span class="q-num">Q2</span> How are actions reflective of worldview?</span>
+  <span><span class="q-num">Q3</span> How do their understandings of ownership differ?</span>
+  <span><span class="q-num">Q4</span> How are their value systems similar and different?</span>
+</div>
+
+<div class="venn-wrapper">
+
+  <!-- Decorative Venn visual -->
+  <div class="venn-visual">
+    <div class="v-circle arthur"></div>
+    <div class="v-circle maureen"></div>
+    <span class="v-label arthur">Arthur</span>
+    <span class="v-label shared">Both</span>
+    <span class="v-label maureen">Maureen</span>
+  </div>
+
+  <!-- MAIN THREE-COLUMN VENN -->
+  <div class="columns">
+
+    <!-- ══════════════════════ ARTHUR ══════════════════════ -->
+    <div class="col col-arthur">
+      <div class="col-header">
+        <span class="col-name">Arthur</span>
+        <span class="col-subtitle">Anishinaabe · Cultural Reclamation</span>
+      </div>
+
+      <span class="category-label">Worldview</span>
+
+      <div class="point">
+        <span class="point-tag">Worldview · Cosmology</span>
+        <span class="point-title">The Lake is a Living Relative, Not Property</span>
+        <p>Arthur operates from an Anishinaabe worldview in which the land and water are not inanimate objects to be owned but living relatives with whom humans share a sacred, reciprocal relationship. When he speaks about manoomin (wild rice), he frames it in terms of spiritual kinship: it was put there by the Creator, it sustains his people, and it belongs to a web of life. This stands in total opposition to Maureen's transactional view of the lake <span class="cite">(Taylor 12)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Worldview · Time</span>
+        <span class="point-title">Cyclical Time: Restoring Ancient Order</span>
+        <p>Arthur's sense of time is cyclical rather than linear. He is not introducing something foreign to the lake — he is <em>returning</em> what was always there. His planting of manoomin is a restoration of the pre-colonial landscape, both ecologically and culturally. His people were harvesting manoomin on this lake for thousands of years before a single cottage deed was signed <span class="cite">(Taylor 18–19)</span>. Maureen's "thirty years" of cottage ownership is, to Arthur, a geological blink.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Worldview · Ecology</span>
+        <span class="point-title">Holistic, Ecological Understanding of the Lake</span>
+        <p>Arthur understands the lake as a complex ecosystem in which manoomin is a keystone element — providing habitat for fish, food for migratory birds, and improved water quality. His argument is not merely cultural but scientific. He sees the lake as a whole; Maureen sees her portion of the shoreline <span class="cite">(Taylor 23–24)</span>.</p>
+      </div>
+
+      <hr class="col-divider">
+      <span class="category-label">Ownership</span>
+
+      <div class="point">
+        <span class="point-tag">Ownership · Treaty Rights</span>
+        <span class="point-title">Ancestral Sovereignty Precedes Colonial Deeds</span>
+        <p>Arthur's claim to plant manoomin is grounded in treaty rights and the constitutional recognition of Indigenous rights in Canada. The lake was Anishinaabe territory long before property law existed on this land; the cottage deed, in Arthur's framework, does not and cannot extinguish that prior claim. He is deliberately exercising a right, not trespassing <span class="cite">(Taylor 29–31)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Ownership · Philosophy</span>
+        <span class="point-title">Land Cannot Be "Owned" — It is Held in Relationship</span>
+        <p>The very concept of individual land ownership is foreign to the Anishinaabe worldview Arthur embodies. Land is not a commodity. One can <em>belong to</em> a territory, but that is not the same as owning it. Arthur's actions reflect this: he is not trying to acquire the lake, he is trying to restore his people's relationship with it <span class="cite">(Taylor 15)</span>.</p>
+      </div>
+
+      <hr class="col-divider">
+      <span class="category-label">Values</span>
+
+      <div class="point">
+        <span class="point-tag">Values · Identity</span>
+        <span class="point-title">Manoomin as Cultural Identity, Not Vegetation</span>
+        <p>Arthur makes explicit that manoomin is inseparable from Anishinaabe identity: <span class="cite">"It's part of who we are as Anishinaabe people" (Taylor 11)</span>. To dismiss the rice as a weed, as Maureen does, is to dismiss his people's existence. The conflict is therefore not about aesthetics or inconvenience — it is about cultural survival and visibility in a landscape that colonialism has tried to erase them from.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Values · Community</span>
+        <span class="point-title">Community and Future Generations Over Individual Comfort</span>
+        <p>Arthur's motivations are explicitly collective. He plants for his community, for the youth who have grown up disconnected from traditional food sources, and for the ancestors whose practices were disrupted by colonization. There is no personal financial benefit; the act is one of communal healing <span class="cite">(Taylor 33–35)</span>. This contrasts with Maureen's largely individual framing of her concerns.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Values · Resistance</span>
+        <span class="point-title">The Act of Planting is Political Resistance</span>
+        <p>Arthur is acutely aware that planting manoomin in a cottager's lake is an inherently political act. He is asserting Indigenous presence and sovereignty in a space colonialism has claimed. His patience and willingness to engage with Maureen is strategic — he has learned to navigate settler systems carefully — but his resolve is absolute. The plant is a flag <span class="cite">(Taylor 38–40)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Values · Patience</span>
+        <span class="point-title">Diplomatic Patience Born of Historical Necessity</span>
+        <p>Arthur's measured, non-confrontational approach is not passive. It reflects generations of Indigenous people who have had to justify their existence within colonial legal and social frameworks. He educates, explains, and negotiates — not because he doubts his rights, but because he understands the reality of power dynamics. His patience is a form of resistance in itself <span class="cite">(Taylor 26)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Values · Spirituality</span>
+        <span class="point-title">Spiritual Obligation to the Land</span>
+        <p>For Arthur, engaging with the land — planting manoomin, harvesting it, teaching others — is a spiritual obligation, not a hobby or a leisure activity. His relationship with the lake exists within a sacred framework of ceremony and reciprocity that Maureen's framework of "cottage enjoyment" cannot accommodate or comprehend <span class="cite">(Taylor 13)</span>.</p>
+      </div>
+
+    </div><!-- /col-arthur -->
+
+    <!-- ══════════════════════ SHARED ══════════════════════ -->
+    <div class="col col-shared">
+      <div class="col-header">
+        <span class="col-name">Shared Ground</span>
+        <span class="col-subtitle">Common Values · Tensions</span>
+      </div>
+
+      <span class="category-label">Both Characters</span>
+
+      <div class="point">
+        <span class="point-tag">Shared</span>
+        <span class="point-title">Deep, Genuine Love for the Lake</span>
+        <p>Both Arthur and Maureen share an authentic, emotionally powerful attachment to this specific body of water. It is not abstract — they each know its moods, its seasons, its sounds. The lake is "home" to both of them, however differently that home has been constructed <span class="cite">(Taylor 8, 42)</span>.</p>
+      </div>
+
+      <hr class="col-divider">
+
+      <div class="point">
+        <span class="point-tag">Shared</span>
+        <span class="point-title">Multi-Generational Connection</span>
+        <p>Both characters invoke their connection across generations. Maureen's family has summered there for decades; Arthur's ancestors have been on this land for millennia. Both use this temporal depth to justify their claims, though the scale is dramatically asymmetrical <span class="cite">(Taylor 19, 44)</span>.</p>
+      </div>
+
+      <hr class="col-divider">
+
+      <div class="point">
+        <span class="point-tag">Shared</span>
+        <span class="point-title">Belief They Are Acting as Stewards</span>
+        <p>Each character believes they are protecting the lake. Maureen maintains the shoreline and monitors water quality; Arthur seeks to restore its ecological balance with manoomin. Both see themselves as caretakers — but their visions of what a "healthy" lake looks like are incompatible <span class="cite">(Taylor 23, 47)</span>.</p>
+      </div>
+
+      <hr class="col-divider">
+
+      <div class="point">
+        <span class="point-tag">Shared</span>
+        <span class="point-title">Unwillingness to Concede Ground</span>
+        <p>Neither character backs down easily. Both are principled, articulate, and emotionally invested to the point where compromise feels like betrayal. This stubbornness gives the play its dramatic tension and reflects how deeply rooted both sets of claims are <span class="cite">(Taylor 51)</span>.</p>
+      </div>
+
+      <hr class="col-divider">
+
+      <div class="point">
+        <span class="point-tag">Shared</span>
+        <span class="point-title">Fear That Their Way of Life is Under Threat</span>
+        <p>Arthur fears the continued erasure of Anishinaabe culture and presence. Maureen fears the disruption of a cottage lifestyle she has built her identity around. Both experience the other as a genuine threat — which is precisely what makes the conflict so intractable and so humanly recognizable <span class="cite">(Taylor 55)</span>.</p>
+      </div>
+
+      <hr class="col-divider">
+
+      <div class="point">
+        <span class="point-tag">Shared</span>
+        <span class="point-title">Desire for Future Generations' Access</span>
+        <p>Both invoke children and future generations. Arthur plants for Anishinaabe youth reconnecting with tradition; Maureen wants her grandchildren to swim and boat in clear water. The lake is not just theirs — it is a bequest. The tragedy is that both visions of legacy are genuine <span class="cite">(Taylor 35, 48)</span>.</p>
+      </div>
+
+      <hr class="col-divider">
+
+      <div class="point">
+        <span class="point-tag">Shared</span>
+        <span class="point-title">Engagement Through Dialogue</span>
+        <p>Crucially, both characters choose dialogue over silence or violence. The play itself is structured around their conversation — their willingness to confront each other directly is what makes it a play about the possibility (however fraught) of understanding across deep historical divides <span class="cite">(Taylor passim)</span>.</p>
+      </div>
+
+      <hr class="col-divider">
+
+      <div class="point">
+        <span class="point-tag">Shared</span>
+        <span class="point-title">Central Identity Tied to This Place</span>
+        <p>For both, this lake is not interchangeable with any other. It is constitutive of who they are. The particularity of place — <em>this</em> lake, <em>this</em> shoreline — grounds both characters' claims in a specificity that generalizations about "Indigenous rights" or "property rights" cannot fully capture <span class="cite">(Taylor 9)</span>.</p>
+      </div>
+
+    </div><!-- /col-shared -->
+
+    <!-- ══════════════════════ MAUREEN ══════════════════════ -->
+    <div class="col col-maureen">
+      <div class="col-header">
+        <span class="col-name">Maureen</span>
+        <span class="col-subtitle">Settler Cottager · Property Rights</span>
+      </div>
+
+      <span class="category-label">Worldview</span>
+
+      <div class="point">
+        <span class="point-tag">Worldview · Commodity</span>
+        <span class="point-title">The Lake as Property and Recreational Resource</span>
+        <p>Maureen's relationship with the lake is fundamentally mediated through Western property law and a recreational framework. The lake is something she enjoys — swimming, boating, the view from the dock. Wild rice disrupts these activities. Her concern about tangled boat motors and blocked swimming areas reveals that her connection, while emotionally real, is primarily one of <em>use</em> rather than spiritual kinship <span class="cite">(Taylor 7, 16)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Worldview · Linear Time</span>
+        <span class="point-title">Linear Time: "Thirty Years" as Legitimacy</span>
+        <p>Maureen measures her claim in decades of continuous use and tax payment. "I've been coming here for thirty years" is offered as a genuine credential — and within her framework, it is. But this linear accumulation of time cannot compete with Arthur's ancestral claim measured in millennia. Her temporal reasoning is sincere but historically shallow <span class="cite">(Taylor 20)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Worldview · Aesthetics</span>
+        <span class="point-title">The "Managed" Landscape: Nature as Curated Aesthetic</span>
+        <p>Maureen has a vision of what the lake should look like: clear water, unobstructed views, a manicured shoreline. Wild rice disrupts this curated aesthetic. Her worldview frames nature as something to be maintained in a particular idealized state — clean, open, controllable — which is itself a deeply colonial impulse rooted in European landscape traditions <span class="cite">(Taylor 22)</span>.</p>
+      </div>
+
+      <hr class="col-divider">
+      <span class="category-label">Ownership</span>
+
+      <div class="point">
+        <span class="point-tag">Ownership · Legal</span>
+        <span class="point-title">Deed and Tax as Ultimate Proof of Ownership</span>
+        <p>For Maureen, the cottage deed and property taxes are the final word on who has rights to the lake. She paid for her property; therefore she has a right to determine what happens in its vicinity. This is a textbook expression of the colonial property system — one that recognizes purchase and taxation as the only legitimate basis for territorial claim, erasing Indigenous prior occupation entirely <span class="cite">(Taylor 28)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Ownership · Individual</span>
+        <span class="point-title">Individual Property Rights Over Collective Rights</span>
+        <p>Maureen's entire argument is structured around individual rights: <em>her</em> dock, <em>her</em> view, <em>her</em> investment. She struggles to understand or accept that collective treaty rights — which exist at a constitutional level in Canada — might supersede her individual property interests. The collision here is between two entirely different legal and philosophical frameworks of ownership <span class="cite">(Taylor 30)</span>.</p>
+      </div>
+
+      <hr class="col-divider">
+      <span class="category-label">Values</span>
+
+      <div class="point">
+        <span class="point-tag">Values · Investment</span>
+        <span class="point-title">Property Value as a Moral Argument</span>
+        <p>Maureen raises the concern that wild rice will affect property values — transforming an ecological and cultural issue into an economic one. This commodification of the natural environment (the lake as an asset to be protected) reveals a value system in which nature's worth is measured in dollars rather than in ecological health or cultural meaning <span class="cite">(Taylor 37)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Values · Good Intentions</span>
+        <span class="point-title">Good Intentions Masking Settler Privilege</span>
+        <p>Maureen genuinely loves the lake and believes herself to be its responsible steward. She does not see herself as complicit in colonization. This is precisely what makes her position so insidious and so representative of settler culture: the inability to recognize how one's own comfort, entitlement, and sense of stewardship are built upon a foundation of dispossession <span class="cite">(Taylor 43)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Values · Fragility</span>
+        <span class="point-title">Settler Fragility: Positioning Herself as Victim</span>
+        <p>When her privileges are challenged by Arthur's rights claim, Maureen casts herself as the aggrieved party — her peace is being disturbed, her property threatened, her way of life upended. This inversion (the party asserting rights is framed as the aggressor; the party defending entitlement is framed as the victim) is a recurring dynamic of colonial encounters that Taylor exposes with surgical precision <span class="cite">(Taylor 50–52)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Values · Cultural Literacy</span>
+        <span class="point-title">Cultural Illiteracy as Product of Settler Privilege</span>
+        <p>Maureen initially has little understanding of the cultural significance of manoomin. Her ignorance is not malicious — it is a product of a system that has never required settlers to learn about the Indigenous peoples whose lands they occupy. When Arthur explains, her responses reveal the limits of empathy untethered from structural awareness <span class="cite">(Taylor 14)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Values · Individualism</span>
+        <span class="point-title">Individualism vs. Relational Obligation</span>
+        <p>Maureen's value system is fundamentally individualistic — centred on what <em>she</em> wants, owns, and has earned. Arthur's is relational — shaped by obligations to community, ancestors, and the natural world. These are not merely different preferences; they represent incompatible ethical frameworks about what humans owe each other and the land they inhabit <span class="cite">(Taylor 39)</span>.</p>
+      </div>
+
+      <div class="point">
+        <span class="point-tag">Values · Control</span>
+        <span class="point-title">Desire for Control Over the Natural Environment</span>
+        <p>Maureen's instinct throughout the play is to control — to maintain the lake as she wants it, to prevent Arthur from altering it. This desire for control over nature (and over Indigenous land use) echoes the broader colonial project of "taming" the land. Arthur's response — patient, legally grounded, culturally resolute — directly challenges that impulse <span class="cite">(Taylor 46–47)</span>.</p>
+      </div>
+
+    </div><!-- /col-maureen -->
+  </div><!-- /columns -->
+
+  <!-- Works Cited -->
+  <div class="works-cited">
+    <h2>Works Cited</h2>
+    <p>Taylor, Drew Hayden. <em>Cottagers and Indians</em>. Talonbooks, 2020.</p>
+  </div>
+
+</div><!-- /venn-wrapper -->
+
+<footer>
+  <strong>MLA Citation Format</strong>
+  All in-text citations follow MLA parenthetical style: (Taylor page number). Full citation appears in Works Cited above.
+  <br><br>
+  <em>Cottagers and Indians</em> · Drew Hayden Taylor · A Play in Two Voices
+</footer>
+
+</body>
+</html>
